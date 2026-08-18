@@ -55,7 +55,7 @@ jobs:
       - name: Publier la release
         uses: softprops/action-gh-release@v2
         with:
-          name: YvanMonkapp ${{ steps.version.outputs.value }}
+          name: Yvan Monk'app ${{ steps.version.outputs.value }}
           generate_release_notes: true
           files: |
             YvanMonkapp-*.zip
