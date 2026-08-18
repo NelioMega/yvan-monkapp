@@ -1,0 +1,58 @@
+﻿<Window x:Class="YvanMonkapp.WelcomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:YvanMonkapp.Controls"
+        Title="Yvan Monk'app" Width="560" SizeToContent="Height"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Topmost="True"
+        FontFamily="{StaticResource UiFont}">
+
+    <Border Margin="16" CornerRadius="18" Background="{StaticResource BoardBrush}"
+            BorderBrush="{StaticResource WoodBrush}" BorderThickness="1.5"
+            MouseLeftButtonDown="OnDragArea">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="26" ShadowDepth="5" Opacity="0.5" Color="#000000" />
+        </Border.Effect>
+
+        <!-- La photo de tableau passe par Background : c'est la seule couche qu'un Border
+             rogne a son CornerRadius. Le voile par-dessus garde la craie lisible. -->
+        <Border CornerRadius="17" Background="{StaticResource BoardPhotoBrush}">
+        <Border CornerRadius="17" Background="#A61A2B24">
+
+        <StackPanel Margin="30,26,30,24">
+            <StackPanel Orientation="Horizontal">
+                <controls:MonkaAvatar Width="70" Height="78" />
+                <StackPanel Margin="18,6,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Bonjour à tous !" Foreground="{StaticResource ChalkBrush}"
+                               FontFamily="{StaticResource ChalkFont}" FontSize="26" />
+                    <TextBlock Text="Yvan s'installe dans votre barre des tâches."
+                               Foreground="{StaticResource ChalkDimBrush}" FontSize="13" Margin="0,4,0,0" />
+                </StackPanel>
+            </StackPanel>
+
+            <Border CornerRadius="12" Background="#0F1C18" Padding="18,16" Margin="0,22,0,0">
+                <StackPanel>
+                    <TextBlock Foreground="{StaticResource ChalkBrush}" FontSize="13" TextWrapping="Wrap"
+                               LineHeight="21"
+                               Text="De temps en temps, une fenêtre s'ouvre avec un calcul et un chrono. Bonne réponse : des points, et plus vous répondez vite, plus ça rapporte. Mauvaise réponse ou chrono dépassé : Yvan s'énerve et le score descend." />
+                    <TextBlock Foreground="{StaticResource ChalkDimBrush}" FontSize="12" TextWrapping="Wrap"
+                               Margin="0,10,0,0" LineHeight="19"
+                               Text="Le reste du temps l'application dort dans la zone de notification. Clic droit sur l'icône pour la mettre en pause, changer la fréquence ou voir vos statistiques." />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Margin="2,18,0,0" FontSize="12" TextWrapping="Wrap" LineHeight="19"
+                       Foreground="{StaticResource WoodBrush}"
+                       Text="Yvan démarrera tout seul avec Windows. Vous pouvez le lui interdire depuis le tableau de bord." />
+
+            <Grid Margin="0,24,0,0">
+                <Button Content="Voir une question tout de suite" Style="{StaticResource GhostButton}"
+                        HorizontalAlignment="Left" Click="OnTryNow" />
+                <Button Content="C'est parti" Style="{StaticResource PrimaryButton}"
+                        HorizontalAlignment="Right" Click="OnStart" />
+            </Grid>
+        </StackPanel>
+        </Border>
+        </Border>
+    </Border>
+</Window>

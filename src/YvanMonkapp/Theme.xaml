@@ -1,0 +1,249 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Palette : craie sur tableau vert, filets bois. Aucun style implicite ici :
+         un Style sans x:Key sur TextBlock repeindrait le contenu des boutons. -->
+    <Color x:Key="BoardTopColor">#223E33</Color>
+    <Color x:Key="BoardBottomColor">#111F1B</Color>
+
+    <SolidColorBrush x:Key="PanelBrush" Color="#182924" />
+    <SolidColorBrush x:Key="PanelSoftBrush" Color="#1F332C" />
+    <SolidColorBrush x:Key="ChalkBrush" Color="#F4F4EC" />
+    <SolidColorBrush x:Key="ChalkDimBrush" Color="#9EB3A8" />
+    <SolidColorBrush x:Key="WoodBrush" Color="#C99A4F" />
+    <SolidColorBrush x:Key="GoodBrush" Color="#69C97A" />
+    <SolidColorBrush x:Key="BadBrush" Color="#E2574C" />
+    <SolidColorBrush x:Key="WarnBrush" Color="#E8B34A" />
+
+    <LinearGradientBrush x:Key="BoardBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource BoardTopColor}" Offset="0" />
+        <GradientStop Color="{StaticResource BoardBottomColor}" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- Vraie photo de tableau vert, posée en fond de fenêtre -->
+    <ImageBrush x:Key="BoardPhotoBrush" ImageSource="pack://application:,,,/Assets/board.png"
+                Stretch="UniformToFill" />
+
+    <FontFamily x:Key="ChalkFont">Segoe Script, Segoe Print, Segoe UI</FontFamily>
+    <FontFamily x:Key="UiFont">Segoe UI</FontFamily>
+
+    <!-- Bouton plein, pour l'action principale -->
+    <Style x:Key="PrimaryButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource WoodBrush}" />
+        <Setter Property="Foreground" Value="#14231D" />
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="20,10" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Shell" Background="{TemplateBinding Background}" CornerRadius="9"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Shell" Property="Background" Value="#DCAE5D" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Shell" Property="Background" Value="#B0853F" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Shell" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Bouton discret, pour les actions secondaires -->
+    <Style x:Key="GhostButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource ChalkDimBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="16,10" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Shell" Background="{TemplateBinding Background}" CornerRadius="9"
+                            BorderBrush="#33F4F4EC" BorderThickness="1" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Shell" Property="Background" Value="#1AF4F4EC" />
+                            <Setter Property="Foreground" Value="{StaticResource ChalkBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Shell" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="AnswerBox" TargetType="TextBox">
+        <Setter Property="Background" Value="#0F1C18" />
+        <Setter Property="Foreground" Value="{StaticResource ChalkBrush}" />
+        <Setter Property="CaretBrush" Value="{StaticResource WoodBrush}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource WoodBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="26" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="BorderBrush" Value="#3A5C4E" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Shell" Background="{TemplateBinding Background}" CornerRadius="10"
+                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"
+                                      VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource WoodBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Curseur : piste sombre, partie parcourue en bois, pastille ronde -->
+    <Style x:Key="SliderThumb" TargetType="Thumb">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Grid Width="16" Height="16" Background="Transparent">
+                        <Ellipse x:Name="Knob" Fill="{StaticResource ChalkBrush}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Knob" Property="Fill" Value="{StaticResource WoodBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Knob" Property="Fill" Value="#5E7A6E" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="SliderSide" TargetType="RepeatButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border Background="{TemplateBinding Background}" Height="5" CornerRadius="3" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ChalkSlider" TargetType="Slider">
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid Background="Transparent">
+                        <Border Height="5" CornerRadius="3" Background="#12211C" VerticalAlignment="Center" />
+                        <Track x:Name="PART_Track">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource SliderSide}" Command="Slider.DecreaseLarge"
+                                              Background="{StaticResource WoodBrush}" />
+                            </Track.DecreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Style="{StaticResource SliderThumb}" />
+                            </Track.Thumb>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource SliderSide}" Command="Slider.IncreaseLarge"
+                                              Background="Transparent" />
+                            </Track.IncreaseRepeatButton>
+                        </Track>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Style implicite assumé : les ScrollBar systeme, blanches, trouent le tableau noir.
+         Viser ScrollBar ne repeint aucun contenu, contrairement a un style implicite TextBlock. -->
+    <Style TargetType="ScrollBar">
+        <Setter Property="Width" Value="8" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid Background="Transparent">
+                        <Border Width="4" CornerRadius="2" Background="#12211C" HorizontalAlignment="Center" />
+                        <Track x:Name="PART_Track" IsDirectionReversed="True">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0" Focusable="False" />
+                            </Track.DecreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border Width="6" CornerRadius="3" Background="#3E5B50" />
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0" Focusable="False" />
+                            </Track.IncreaseRepeatButton>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ChalkCheck" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource ChalkBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <StackPanel Orientation="Horizontal" Background="Transparent">
+                        <Border x:Name="Track" Width="38" Height="21" CornerRadius="11" Background="#2C443B"
+                                BorderBrush="#3E5B50" BorderThickness="1" VerticalAlignment="Center">
+                            <Ellipse x:Name="Knob" Width="15" Height="15" Fill="{StaticResource ChalkDimBrush}"
+                                     HorizontalAlignment="Left" Margin="3,0,0,0" />
+                        </Border>
+                        <ContentPresenter Margin="12,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{StaticResource WoodBrush}" />
+                            <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right" />
+                            <Setter TargetName="Knob" Property="Margin" Value="0,0,3,0" />
+                            <Setter TargetName="Knob" Property="Fill" Value="#14231D" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

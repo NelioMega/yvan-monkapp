@@ -1,0 +1,149 @@
+﻿<Window x:Class="YvanMonkapp.QuizWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:YvanMonkapp.Controls"
+        Title="Yvan Monk'app" Width="580" SizeToContent="Height"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="False" Topmost="True" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" FontFamily="{StaticResource UiFont}">
+
+    <!-- la marge laisse la place à l'ombre portée et au tremblement de la fenêtre -->
+    <Border x:Name="Root" Margin="18" CornerRadius="18" Background="{StaticResource BoardBrush}"
+            BorderBrush="{StaticResource WoodBrush}" BorderThickness="1.5"
+            MouseLeftButtonDown="OnDragArea" Opacity="0">
+        <Border.RenderTransform>
+            <TranslateTransform x:Name="ShakeShift" Y="26" />
+        </Border.RenderTransform>
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" ShadowDepth="6" Opacity="0.55" Color="#000000" />
+        </Border.Effect>
+
+        <!-- La photo de tableau passe par Background : c'est la seule couche qu'un Border
+             rogne a son CornerRadius. Le voile par-dessus garde la craie lisible. -->
+        <Border CornerRadius="17" Background="{StaticResource BoardPhotoBrush}">
+        <Border CornerRadius="17" Background="#A61A2B24">
+
+        <Grid Margin="24,20,24,18">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- en-tête : le prof, sa réplique, le chapitre -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <controls:MonkaAvatar x:Name="Face" Grid.Column="0" Width="62" Height="68" VerticalAlignment="Top" />
+
+                <StackPanel Grid.Column="1" Margin="14,2,10,0">
+                    <TextBlock Text="Yvan Monka" Foreground="{StaticResource ChalkBrush}"
+                               FontFamily="{StaticResource ChalkFont}" FontSize="19" />
+                    <TextBlock x:Name="SpeechText" Foreground="{StaticResource ChalkDimBrush}" FontSize="13"
+                               TextWrapping="Wrap" Margin="0,3,0,0" />
+                </StackPanel>
+
+                <Border Grid.Column="2" x:Name="LevelBadge" CornerRadius="8" Padding="10,5" VerticalAlignment="Top"
+                        Background="#24413A" BorderBrush="#3C5E52" BorderThickness="1">
+                    <TextBlock x:Name="LevelText" Foreground="{StaticResource WoodBrush}" FontSize="11"
+                               FontWeight="SemiBold" />
+                </Border>
+            </Grid>
+
+            <!-- l'énoncé -->
+            <Border Grid.Row="1" Margin="0,20,0,0" CornerRadius="12" Background="#0F1C18" Padding="20,22">
+                <TextBlock x:Name="PromptText" Foreground="{StaticResource ChalkBrush}" FontSize="30"
+                           FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" LineHeight="38" />
+            </Border>
+
+            <!-- chrono -->
+            <Grid x:Name="TimerArea" Grid.Row="2" Margin="0,14,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Border x:Name="TimerTrack" Grid.Column="0" Height="7" CornerRadius="4" Background="#1E332C"
+                        VerticalAlignment="Center" SizeChanged="OnTimerTrackResized">
+                    <Border x:Name="TimerFill" HorizontalAlignment="Left" CornerRadius="4"
+                            Background="{StaticResource GoodBrush}" />
+                </Border>
+
+                <TextBlock x:Name="TimerText" Grid.Column="1" Margin="12,0,0,0" MinWidth="42"
+                           TextAlignment="Right" Foreground="{StaticResource ChalkDimBrush}"
+                           FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
+            </Grid>
+
+            <!-- saisie -->
+            <Grid x:Name="InputArea" Grid.Row="3" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="AnswerBox" Grid.Column="0" Style="{StaticResource AnswerBox}"
+                         KeyDown="OnAnswerKeyDown" MaxLength="24" />
+                <Button x:Name="SubmitButton" Grid.Column="1" Margin="10,0,0,0" Content="Valider"
+                        Style="{StaticResource PrimaryButton}" Click="OnSubmit" />
+                <Button x:Name="GiveUpButton" Grid.Column="2" Margin="8,0,0,0" Content="Je sèche"
+                        Style="{StaticResource GhostButton}" Click="OnGiveUp" />
+            </Grid>
+
+            <!-- correction -->
+            <Border x:Name="ResultArea" Grid.Row="3" Margin="0,16,0,0" CornerRadius="12" Padding="18,16"
+                    Background="#0F1C18" Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="DeltaText" FontSize="30" FontWeight="Bold" />
+                            <TextBlock x:Name="VerdictText" Margin="12,0,0,0" VerticalAlignment="Center"
+                                       FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ChalkBrush}" />
+                        </StackPanel>
+                        <TextBlock x:Name="ExpectedText" Margin="0,8,0,0" FontSize="14"
+                                   Foreground="{StaticResource ChalkBrush}" TextWrapping="Wrap" />
+                        <TextBlock x:Name="ExplanationText" Margin="0,6,0,0" FontSize="13"
+                                   Foreground="{StaticResource ChalkDimBrush}" TextWrapping="Wrap" LineHeight="19" />
+                        <TextBlock x:Name="BonusText" Margin="0,8,0,0" FontSize="12"
+                                   Foreground="{StaticResource WoodBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <Button x:Name="CloseButton" Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Bottom"
+                            Content="Compris" Style="{StaticResource PrimaryButton}" Click="OnClose" />
+                </Grid>
+            </Border>
+
+            <!-- pied : score et raccourcis -->
+            <Grid Grid.Row="4" Margin="2,14,2,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock x:Name="PointsText" Foreground="{StaticResource ChalkBrush}" FontSize="13"
+                               FontWeight="SemiBold" />
+                    <TextBlock x:Name="StreakText" Margin="12,0,0,0" Foreground="{StaticResource WoodBrush}"
+                               FontSize="13" />
+                </StackPanel>
+
+                <TextBlock x:Name="HintText" Grid.Column="1" TextAlignment="Right"
+                           Foreground="#5E7A6E" FontSize="11" VerticalAlignment="Center"
+                           Text="Entrée pour valider · Échap pour abandonner" />
+            </Grid>
+        </Grid>
+        </Border>
+        </Border>
+    </Border>
+</Window>

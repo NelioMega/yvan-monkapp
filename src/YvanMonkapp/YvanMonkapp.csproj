@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>YvanMonkapp</AssemblyName>
+    <RootNamespace>YvanMonkapp</RootNamespace>
+    <!-- Identite complete : un binaire sans metadonnees passe pour suspect, autant
+         aupres des heuristiques antivirus que de la fenetre de proprietes Windows. -->
+    <Version>1.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <Product>Yvan Monk'app</Product>
+    <AssemblyTitle>Yvan Monk'app</AssemblyTitle>
+    <Company>NelioMega</Company>
+    <Authors>NelioMega</Authors>
+    <Description>Quiz de calcul mental en popup, dans la zone de notification.</Description>
+    <Copyright>Copyright (c) 2026 NelioMega</Copyright>
+    <NeutralLanguage>fr-FR</NeutralLanguage>
+    <ApplicationIcon>Assets\monka.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WinForms n'est la que pour l'icone de la zone de notification : sans ce retrait,
+         Application / MessageBox / Point deviendraient ambigus avec leurs jumeaux WPF. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <!-- le SDK Desktop n'ajoute pas System.IO a ses usings implicites -->
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Resource : lisible par pack:// depuis le XAML, meme en publication fichier unique. -->
+    <Resource Include="Assets\monka.ico" />
+    <Resource Include="Assets\monka.png" />
+    <Resource Include="Assets\monka-dark.png" />
+    <Resource Include="Assets\board.png" />
+    <!-- EmbeddedResource : MediaPlayer exige un vrai fichier, extrait dans AppData au demarrage. -->
+    <EmbeddedResource Include="Assets\intro.mp3" />
+    <EmbeddedResource Include="Assets\bonjour.mp3" />
+  </ItemGroup>
+
+</Project>

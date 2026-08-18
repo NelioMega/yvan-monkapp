@@ -1,0 +1,33 @@
+<UserControl x:Class="YvanMonkapp.Controls.MonkaAvatar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Le vrai Yvan quand tout va bien, Dark Yvan Monka quand ça se gâte.
+         Les photos sont peintes dans des Ellipse : c'est ce qui les détoure en rond,
+         un Border à coins arrondis ne rognerait pas son contenu. -->
+    <Grid>
+        <Ellipse x:Name="Glow" Margin="-6" Opacity="0">
+            <Ellipse.Fill>
+                <RadialGradientBrush>
+                    <GradientStop Color="#00E2574C" Offset="0.55" />
+                    <GradientStop Color="#B0E2574C" Offset="0.78" />
+                    <GradientStop Color="#00E2574C" Offset="1" />
+                </RadialGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
+
+        <Ellipse x:Name="Calm">
+            <Ellipse.Fill>
+                <ImageBrush ImageSource="pack://application:,,,/Assets/monka.png" Stretch="UniformToFill" />
+            </Ellipse.Fill>
+        </Ellipse>
+
+        <Ellipse x:Name="Dark" Opacity="0">
+            <Ellipse.Fill>
+                <ImageBrush ImageSource="pack://application:,,,/Assets/monka-dark.png" Stretch="UniformToFill" />
+            </Ellipse.Fill>
+        </Ellipse>
+
+        <Ellipse x:Name="Ring" Stroke="#C99A4F" StrokeThickness="2.5" />
+    </Grid>
+</UserControl>

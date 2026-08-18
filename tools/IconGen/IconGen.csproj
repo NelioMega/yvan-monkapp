@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Petit utilitaire hors application : regenere Assets/monka.ico.
+       UseWindowsForms sert uniquement a tirer System.Drawing sans paquet NuGet. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>IconGen</RootNamespace>
+  </PropertyGroup>
+
+</Project>
