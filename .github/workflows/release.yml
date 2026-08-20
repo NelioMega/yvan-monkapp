@@ -36,6 +36,7 @@ jobs:
           -p:Version=${{ steps.version.outputs.value }}
           -o publish/autonome
 
+      # TEST
       # Legere : exige le runtime .NET 8 Desktop sur la machine cible.
       - name: Publier la version legere
         run: >
