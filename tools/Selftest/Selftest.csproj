@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Controle de sante du generateur : chaque enonce tire doit accepter sa propre
        reponse. On recompile les fichiers du Core sans embarquer l'interface. -->
@@ -17,10 +17,16 @@
     <Compile Include="..\..\src\YvanMonkapp\Core\Bulletin.cs" />
     <Compile Include="..\..\src\YvanMonkapp\Core\QuizRun.cs" />
     <Compile Include="..\..\src\YvanMonkapp\Core\AppSettings.cs" />
+    <Compile Include="..\..\src\YvanMonkapp\Core\Hints.cs" />
     <Compile Include="..\..\src\YvanMonkapp\Core\Log.cs" />
     <Compile Include="..\..\src\YvanMonkapp\Core\Paths.cs" />
     <Compile Include="..\..\src\YvanMonkapp\Core\Question.cs" />
     <Compile Include="..\..\src\YvanMonkapp\Core\QuestionGenerator.cs" />
+    <Compile Include="..\..\src\YvanMonkapp\Core\QuestionBank1.cs" />
+    <Compile Include="..\..\src\YvanMonkapp\Core\QuestionBank2.cs" />
+    <Compile Include="..\..\src\YvanMonkapp\Core\QuestionBank3.cs" />
+    <Compile Include="..\..\src\YvanMonkapp\Core\QuestionBankGeo.cs" />
+    <Compile Include="..\..\src\YvanMonkapp\Core\Figure.cs" />
     <Compile Include="..\..\src\YvanMonkapp\Core\Ranks.cs" />
     <Compile Include="..\..\src\YvanMonkapp\Core\ScoreData.cs" />
     <Compile Include="..\..\src\YvanMonkapp\Core\ScoreEngine.cs" />

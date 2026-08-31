@@ -288,19 +288,28 @@ public partial class App : Application
 
         int level = ScoreEngine.LevelFor(_settings, _score);
 
+        // les chapitres ratés repassent devant : c'est là que le travail se joue
+        var focus = _score.WeakTopics().ToHashSet();
+
         if (_settings.Exams && level >= 2 && _rng.NextDouble() < ExamChance
             && (_score.LastExam is null || DateTime.Now - _score.LastExam > ExamCooldown))
         {
             _score.LastExam = DateTime.Now;
-            var questions = Enumerable.Range(0, QuizRun.ExamLength)
-                .Select(_ => QuestionGenerator.Next(level))
-                .ToList();
+
+            var questions = new List<Question>();
+            for (int i = 0; i < QuizRun.ExamLength; i++)
+            {
+                // la dernière monte d'un cran : une interro doit finir plus haut qu'elle ne commence
+                bool last = i == QuizRun.ExamLength - 1;
+                int at = last ? Math.Min(level + 1, Question.MaxLevel) : level;
+                questions.Add(QuestionGenerator.Next(at, focus));
+            }
 
             Log.Write($"interro surprise, niveau {level}");
             return QuizRun.Exam(questions);
         }
 
-        return QuizRun.Single(QuestionGenerator.Next(level));
+        return QuizRun.Single(QuestionGenerator.Next(level, focus));
     }
 
     /// <summary>Vrai quand il vaut mieux ne pas interrompre : popup déjà ouvert ou plein écran.</summary>
@@ -310,7 +319,46 @@ public partial class App : Application
         return _settings.SkipWhenFullscreen && ForegroundWatch.IsFullscreenAppActive();
     }
 
-    private void ShowQuiz()
+    private void ShowQuiz() => ShowRun(BuildRun());
+
+    /// <summary>
+    /// Une série demandée depuis le tableau de bord. Sans chapitre, elle balaie le niveau
+    /// courant ; avec un chapitre, elle se cale sur le niveau où ce chapitre se pose.
+    /// </summary>
+    private void StartTraining(string? topic)
+    {
+        if (_quiz is not null)
+        {
+            _quiz.Activate();
+            return;
+        }
+
+        int level = ScoreEngine.LevelFor(_settings, _score);
+        List<Question> questions;
+        string label;
+
+        if (string.IsNullOrEmpty(topic))
+        {
+            label = "ENTRAÎNEMENT";
+            var focus = _score.WeakTopics().ToHashSet();
+            questions = Enumerable.Range(0, QuizRun.TrainingLength)
+                .Select(_ => QuestionGenerator.Next(level, focus))
+                .ToList();
+        }
+        else
+        {
+            level = QuestionGenerator.LevelWith(topic, level);
+            label = topic;
+            questions = Enumerable.Range(0, QuizRun.TrainingLength)
+                .Select(_ => QuestionGenerator.NextFrom(level, topic))
+                .ToList();
+        }
+
+        Log.Write($"entraînement : {label}, niveau {level}");
+        ShowRun(QuizRun.Training(questions, label));
+    }
+
+    private void ShowRun(QuizRun run)
     {
         if (_quiz is not null)
         {
@@ -320,7 +368,7 @@ public partial class App : Application
 
         try
         {
-            _quiz = new QuizWindow(BuildRun(), _score, _settings) { Icon = WindowIcon };
+            _quiz = new QuizWindow(run, _score, _settings) { Icon = WindowIcon };
             _quiz.Completed += _ =>
             {
                 RefreshMenu();
@@ -360,6 +408,7 @@ public partial class App : Application
             NextAt = _scheduler?.NextAt
         };
         _dashboard.AskNowRequested += ShowQuiz;
+        _dashboard.TrainingRequested += StartTraining;
         _dashboard.SettingsChanged += OnSettingsChanged;
         _dashboard.ScoreReset += ResetScore;
         _dashboard.BulletinRequested += ShowBulletin;
@@ -425,7 +474,14 @@ public partial class App : Application
         _score.Abandoned = 0;
         _score.TotalAnswerSeconds = 0;
         _score.LastQuestion = null;
+        _score.BestDailyStreak = 0;
+        _score.Hints = 0;
+        _score.LastExam = null;
+        _score.LastBulletin = null;
         _score.ByLevel.Clear();
+        _score.ByTopic.Clear();
+        _score.Days.Clear();
+        _score.Review.Clear();
         _score.History.Clear();
 
         Storage.Save(_score);

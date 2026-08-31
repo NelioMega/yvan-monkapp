@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Le popup est entierement dessine en XAML : il est donc invisible tant qu'on ne
+       lance pas l'application. Ce banc recompile la fenetre de question, la met en scene
+       hors ecran et la rend en PNG, ce qui permet de juger la mise en page et les
+       animations sans rien installer sur la machine. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>Apercu</AssemblyName>
+    <RootNamespace>YvanMonkapp</RootNamespace>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <StartupObject>YvanMonkapp.Apercu</StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="..\..\src\YvanMonkapp\Core\*.cs" />
+    <Compile Include="..\..\src\YvanMonkapp\Controls\FigureView.cs" />
+    <Compile Include="..\..\src\YvanMonkapp\Controls\MonkaAvatar.xaml.cs">
+      <DependentUpon>MonkaAvatar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\src\YvanMonkapp\QuizWindow.xaml.cs">
+      <DependentUpon>QuizWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\src\YvanMonkapp\DashboardWindow.xaml.cs">
+      <DependentUpon>DashboardWindow.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Link garde le chemin logique attendu par les URI pack de la fenetre. -->
+    <Page Include="..\..\src\YvanMonkapp\Theme.xaml" Link="Theme.xaml" />
+    <Page Include="..\..\src\YvanMonkapp\Controls\MonkaAvatar.xaml" Link="Controls\MonkaAvatar.xaml" />
+    <Page Include="..\..\src\YvanMonkapp\QuizWindow.xaml" Link="QuizWindow.xaml" />
+    <Page Include="..\..\src\YvanMonkapp\DashboardWindow.xaml" Link="DashboardWindow.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\src\YvanMonkapp\Assets\monka.png" Link="Assets\monka.png" />
+    <Resource Include="..\..\src\YvanMonkapp\Assets\monka-dark.png" Link="Assets\monka-dark.png" />
+    <Resource Include="..\..\src\YvanMonkapp\Assets\board.png" Link="Assets\board.png" />
+  </ItemGroup>
+
+</Project>

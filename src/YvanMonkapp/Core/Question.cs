@@ -23,12 +23,18 @@ public sealed record Question
     /// <summary>La correction d'Yvan, affichée après la réponse.</summary>
     public required string Explanation { get; init; }
 
+    /// <summary>Le coup de pouce, donné sur demande contre une part des points.</summary>
+    public string Hint { get; init; } = "";
+
+    /// <summary>Le schéma affiché sous l'énoncé, quand la question se lit mieux dessinée.</summary>
+    public Figure? Figure { get; init; }
+
     public required int Seconds { get; init; }
 
     public required int BasePoints { get; init; }
 
     /// <summary>Niveau le plus élevé que le générateur sait produire.</summary>
-    public const int MaxLevel = 6;
+    public const int MaxLevel = 8;
 
     public static string LevelName(int level) => level switch
     {
@@ -38,6 +44,8 @@ public sealed record Question
         4 => "Lycée",
         5 => "Terminale",
         6 => "Post-bac",
+        7 => "Prépa",
+        8 => "Agrégation",
         _ => "Bonus"
     };
 
@@ -48,6 +56,8 @@ public sealed record Question
         3 => 35,
         4 => 45,
         5 => 60,
-        _ => 75
+        6 => 75,
+        7 => 90,
+        _ => 110
     };
 }

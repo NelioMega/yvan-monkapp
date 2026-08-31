@@ -1,4 +1,4 @@
-# Fabrique la version à donner à quelqu'un : .NET embarqué, rien à installer en face.
+﻿# Fabrique la version à donner à quelqu'un : .NET embarqué, rien à installer en face.
 #
 #   powershell -ExecutionPolicy Bypass -File tools\package.ps1
 #   powershell -ExecutionPolicy Bypass -File tools\package.ps1 -Dossier
@@ -8,7 +8,7 @@
 # C'est la forme à préférer si un antivirus tatillon rouspète sur le fichier unique.
 
 param(
-    [string]$Version = '1.0.0',
+    [string]$Version = '1.2.0',
     [switch]$Dossier
 )
 

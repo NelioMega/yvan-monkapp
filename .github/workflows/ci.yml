@@ -18,3 +18,14 @@ jobs:
 
       - name: Compiler
         run: dotnet build src/YvanMonkapp/YvanMonkapp.csproj -c Release --nologo
+
+      # Le banc d'apercu recompile les memes fenetres a part : s'il casse, c'est que le
+      # XAML ou le Core a bouge sans que le harnais suive.
+      - name: Compiler le banc d'apercu
+        run: dotnet build tools/Apercu/Apercu.csproj -c Release --nologo
+
+      # Le vrai garde-fou du projet : chaque enonce tire doit accepter sa propre reponse.
+      # 1500 tirages par niveau suffisent a sortir les familles fautives sans allonger le CI.
+      # Pas de --nologo ici : dotnet run l'avale avec l'argument qui le suit.
+      - name: Controle du generateur
+        run: dotnet run --project tools/Selftest/Selftest.csproj -c Release -- 1500

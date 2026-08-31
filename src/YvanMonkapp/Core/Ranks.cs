@@ -1,4 +1,4 @@
-﻿namespace YvanMonkapp.Core;
+namespace YvanMonkapp.Core;
 
 public readonly record struct Rank(string Name, int From, int To, int Level);
 
@@ -15,7 +15,11 @@ public static class Ranks
         new("Délégué de maths", 800, 1500, 4),
         new("Major de promo", 1500, 2600, 4),
         new("Futur agrégé", 2600, 4200, 5),
-        new("Yvan Monka lui-même", 4200, int.MaxValue, 6)
+        new("Agrégé de mathématiques", 4200, 6400, 6),
+        new("Colleur de prépa", 6400, 9200, 6),
+        new("Docteur en mathématiques", 9200, 13000, 7),
+        new("Médaille Fields du quartier", 13000, 18000, 7),
+        new("Yvan Monka lui-même", 18000, int.MaxValue, 8)
     };
 
     public static Rank Of(int points)
@@ -25,6 +29,17 @@ public static class Ranks
             if (points >= rank.From && points < rank.To) return rank;
         }
         return All[^1];
+    }
+
+    /// <summary>Le rang qui suit celui du score donné, ou null pour le dernier de la liste.</summary>
+    public static Rank? After(int points)
+    {
+        var current = Of(points);
+        for (int i = 0; i < All.Length - 1; i++)
+        {
+            if (All[i].Name == current.Name) return All[i + 1];
+        }
+        return null;
     }
 
     /// <summary>Largeur, en points, prêtée au rang des scores négatifs qui n'a pas de plancher.</summary>

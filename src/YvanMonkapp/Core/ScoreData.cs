@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace YvanMonkapp.Core;
 
@@ -24,6 +24,9 @@ public sealed class HistoryEntry
 
     /// <summary>Vrai si la question venait du carnet d'erreurs.</summary>
     public bool Review { get; set; }
+
+    /// <summary>Vrai si le joueur a demandé l'indice avant de répondre.</summary>
+    public bool Hinted { get; set; }
 }
 
 public sealed class LevelStat
@@ -55,6 +58,8 @@ public sealed class ReviewItem
     public double? Numeric { get; set; }
     public List<string> Accepted { get; set; } = new();
     public string Explanation { get; set; } = "";
+    public string Hint { get; set; } = "";
+    public Figure? Figure { get; set; }
     public int Seconds { get; set; }
     public int BasePoints { get; set; }
 
@@ -74,6 +79,8 @@ public sealed class ReviewItem
         Numeric = question.Numeric,
         Accepted = question.Accepted.ToList(),
         Explanation = question.Explanation,
+        Hint = question.Hint,
+        Figure = question.Figure,
         Seconds = question.Seconds,
         BasePoints = question.BasePoints
     };
@@ -87,6 +94,8 @@ public sealed class ReviewItem
         Numeric = Numeric,
         Accepted = Accepted,
         Explanation = Explanation,
+        Hint = Hint,
+        Figure = Figure,
         Seconds = Seconds,
         BasePoints = BasePoints
     };
@@ -118,7 +127,13 @@ public sealed class ScoreData
     /// <summary>Date du dernier bulletin affiché, pour ne pas le repasser en boucle.</summary>
     public DateTime? LastBulletin { get; set; }
 
+    /// <summary>Indices demandés, tous chapitres confondus.</summary>
+    public int Hints { get; set; }
+
     public Dictionary<int, LevelStat> ByLevel { get; set; } = new();
+
+    /// <summary>Réussite par chapitre : c'est elle qui désigne les points faibles à retravailler.</summary>
+    public Dictionary<string, LevelStat> ByTopic { get; set; } = new();
 
     /// <summary>Activité par jour, clé "aaaa-mm-jj".</summary>
     public Dictionary<string, DayStat> Days { get; set; } = new();
@@ -140,6 +155,35 @@ public sealed class ScoreData
             ByLevel[level] = stat;
         }
         return stat;
+    }
+
+    public LevelStat Topic(string topic)
+    {
+        string key = string.IsNullOrEmpty(topic) ? "Divers" : topic;
+        if (!ByTopic.TryGetValue(key, out var stat))
+        {
+            stat = new LevelStat();
+            ByTopic[key] = stat;
+        }
+        return stat;
+    }
+
+    /// <summary>
+    /// Les chapitres qui coincent : au moins quelques questions posées, et moins de deux
+    /// réponses justes sur trois. Le générateur s'en sert pour ramener ce qui ne passe pas.
+    /// </summary>
+    public IReadOnlyList<string> WeakTopics(int max = 6)
+    {
+        const int minimumAsked = 4;
+        const double threshold = 2.0 / 3;
+
+        return ByTopic
+            .Where(pair => pair.Value.Asked >= minimumAsked && pair.Value.Accuracy < threshold)
+            .OrderBy(pair => pair.Value.Accuracy)
+            .ThenByDescending(pair => pair.Value.Asked)
+            .Take(max)
+            .Select(pair => pair.Key)
+            .ToList();
     }
 
     public DayStat Day(DateTime day)

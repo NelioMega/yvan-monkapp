@@ -11,7 +11,8 @@ public sealed record AnswerResult(
     bool RankChanged,
     bool RankUp,
     bool LeftReview,
-    int DailyStreak);
+    int DailyStreak,
+    bool Hinted);
 
 /// <summary>Barème : ce que rapporte une bonne réponse, ce que coûte le reste.</summary>
 public static class ScoreEngine
@@ -27,6 +28,15 @@ public static class ScoreEngine
     /// <summary>Au-delà, le carnet devient une punition : on oublie les plus anciennes fautes.</summary>
     private const int ReviewCapacity = 40;
 
+    /// <summary>
+    /// Plafond du bonus de série. Il monte avec le niveau : à 110 secondes par question,
+    /// enchaîner dix bonnes réponses demande nettement plus qu'au niveau 1.
+    /// </summary>
+    private static int StreakCap(int level) => 10 + 4 * Math.Clamp(level, 1, Question.MaxLevel);
+
+    /// <summary>Part des points conservée quand l'indice a été demandé.</summary>
+    private const double HintedShare = 0.5;
+
     /// <summary>Niveau à poser, selon les réglages et le rang atteint.</summary>
     public static int LevelFor(AppSettings settings, ScoreData score) =>
         settings.Difficulty == DifficultyMode.Fixe
@@ -34,7 +44,7 @@ public static class ScoreEngine
             : Math.Clamp(Ranks.Of(score.Points).Level, 1, Question.MaxLevel);
 
     public static AnswerResult Apply(ScoreData score, Question question, AnswerOutcome outcome,
-        string given, double seconds, bool fromReview = false)
+        string given, double seconds, bool fromReview = false, bool hinted = false)
     {
         var before = Ranks.Of(score.Points);
         bool good = outcome == AnswerOutcome.Correcte;
@@ -48,13 +58,22 @@ public static class ScoreEngine
             // répondre vite rapporte jusqu'à la moitié des points de base en plus
             double left = Math.Clamp(1 - seconds / Math.Max(1, question.Seconds), 0, 1);
             speedBonus = (int)Math.Round(question.BasePoints * 0.5 * left);
-            streakBonus = Math.Min(score.Streak * 2, 20);
+            streakBonus = Math.Min(score.Streak * 2, StreakCap(question.Level));
             delta = question.BasePoints + speedBonus + streakBonus;
+
+            // l'indice ne coûte rien de plus qu'il ne rapporte de moins : la moitié du gain
+            if (hinted)
+            {
+                delta = (int)Math.Round(delta * HintedShare);
+                speedBonus = 0;
+                streakBonus = 0;
+            }
 
             score.Streak++;
             score.Correct++;
             score.TotalAnswerSeconds += seconds;
             score.Level(question.Level).Correct++;
+            score.Topic(question.Topic).Correct++;
         }
         else
         {
@@ -84,7 +103,9 @@ public static class ScoreEngine
 
         score.Points += delta;
         score.Asked++;
+        if (hinted) score.Hints++;
         score.Level(question.Level).Asked++;
+        score.Topic(question.Topic).Asked++;
         score.LastQuestion = DateTime.Now;
         score.BestPoints = Math.Max(score.BestPoints, score.Points);
         score.BestStreak = Math.Max(score.BestStreak, score.Streak);
@@ -108,14 +129,15 @@ public static class ScoreEngine
             Outcome = outcome,
             Delta = delta,
             Seconds = Math.Round(seconds, 1),
-            Review = fromReview
+            Review = fromReview,
+            Hinted = hinted
         });
 
         var after = Ranks.Of(score.Points);
         bool changed = after.Name != before.Name;
 
         return new AnswerResult(outcome, delta, speedBonus, streakBonus, score.Points, score.Streak,
-            after, changed, changed && score.Points > before.From, leftReview, dailyStreak);
+            after, changed, changed && score.Points > before.From, leftReview, dailyStreak, hinted);
     }
 
     /// <summary>Points offerts hors question : l'interro sans faute, pour l'instant.</summary>

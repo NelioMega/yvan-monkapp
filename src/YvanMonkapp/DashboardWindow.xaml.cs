@@ -20,6 +20,9 @@ public partial class DashboardWindow : Window
     /// </summary>
     private bool _loading = true;
 
+    /// <summary>La vue affichée dans le panneau du bas : Historique, Chapitres ou Carnet.</summary>
+    private string _tab = "Historique";
+
     public DashboardWindow(AppSettings settings, ScoreData score)
     {
         InitializeComponent();
@@ -41,6 +44,12 @@ public partial class DashboardWindow : Window
 
     /// <summary>Demandé par le bouton « Bulletin ».</summary>
     public event Action? BulletinRequested;
+
+    /// <summary>
+    /// Une série d'entraînement est demandée. Le chapitre est nul pour un entraînement
+    /// général, renseigné quand le joueur a cliqué une ligne de la vue « Chapitres ».
+    /// </summary>
+    public event Action<string?>? TrainingRequested;
 
     /// <summary>Heure du prochain passage, affichée sous l'interrupteur principal.</summary>
     public DateTime? NextAt { get; set; }
@@ -70,8 +79,11 @@ public partial class DashboardWindow : Window
         BestStreakText.Text = _score.BestStreak.ToString();
         SpeedText.Text = _score.Correct == 0 ? "—" : $"{_score.AverageSeconds:0.0} s";
 
-        HistoryList.ItemsSource = _score.History.Take(30).Select(ToRow).ToList();
+        ReviewText.Text = _score.Review.Count.ToString();
+
+        FillList();
         BuildCalendar();
+        ShowWeakTopics();
 
         EnabledCheck.IsChecked = _settings.Enabled;
         ExamCheck.IsChecked = _settings.Exams;
@@ -125,6 +137,125 @@ public partial class DashboardWindow : Window
                 CalendarGrid.Children.Add(DayCell(day));
             }
         }
+    }
+
+    // --- Le panneau du bas -------------------------------------------------------------
+
+    private void OnTab(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is string tab) _tab = tab;
+        FillList();
+    }
+
+    /// <summary>Remplit le panneau du bas selon l'onglet choisi, et éclaire l'onglet actif.</summary>
+    private void FillList()
+    {
+        HistoryTab.Opacity = _tab == "Historique" ? 1 : 0.5;
+        TopicsTab.Opacity = _tab == "Chapitres" ? 1 : 0.5;
+        ReviewTab.Opacity = _tab == "Carnet" ? 1 : 0.5;
+
+        switch (_tab)
+        {
+            case "Chapitres":
+                TabHintText.Text = "cliquez un chapitre pour vous entraîner dessus";
+                HistoryList.ItemsSource = TopicRows();
+                break;
+
+            case "Carnet":
+                TabHintText.Text = _score.Review.Count == 0 ? "" : "les questions ratées, dans l'ordre de retour";
+                HistoryList.ItemsSource = ReviewRows();
+                break;
+
+            default:
+                TabHintText.Text = "";
+                HistoryList.ItemsSource = _score.History.Take(30).Select(ToRow).ToList();
+                break;
+        }
+    }
+
+    private void OnRowClick(object sender, MouseButtonEventArgs e)
+    {
+        if (_tab != "Chapitres") return;
+        if (sender is FrameworkElement row && row.Tag is string topic && topic.Length > 0)
+        {
+            TrainingRequested?.Invoke(topic);
+        }
+    }
+
+    private void OnTrain(object sender, RoutedEventArgs e) => TrainingRequested?.Invoke(null);
+
+    /// <summary>
+    /// Les chapitres du niveau courant, les moins réussis en tête. Un chapitre jamais posé
+    /// se range au milieu : il n'est ni acquis ni en difficulté, mais il vaut le détour.
+    ///
+    /// Les chapitres déjà travaillés restent de la partie même s'ils viennent d'un niveau
+    /// plus bas : sinon un point faible de sixième disparaîtrait de la liste dès qu'on monte.
+    /// </summary>
+    private List<HistoryRow> TopicRows()
+    {
+        const double unseen = 0.75;
+        int level = ScoreEngine.LevelFor(_settings, _score);
+
+        return QuestionGenerator.TopicsFor(level)
+            .Concat(_score.ByTopic.Keys)
+            .Distinct()
+            .Select(topic =>
+            {
+                var stat = _score.ByTopic.GetValueOrDefault(topic);
+                double rank = stat is null || stat.Asked == 0 ? unseen : stat.Accuracy;
+
+                string detail = stat is null || stat.Asked == 0
+                    ? "jamais posé"
+                    : $"{stat.Asked} question{(stat.Asked > 1 ? "s" : "")} · {stat.Correct} juste{(stat.Correct > 1 ? "s" : "")}";
+
+                string score = stat is null || stat.Asked == 0 ? "—" : $"{stat.Accuracy * 100:0} %";
+                var color = (Brush)FindResource(rank >= 2.0 / 3 ? "GoodBrush" : "BadBrush");
+                if (stat is null || stat.Asked == 0) color = (Brush)FindResource("ChalkDimBrush");
+
+                return (rank, row: new HistoryRow(topic, detail, score, color, topic));
+            })
+            .OrderBy(pair => pair.rank)
+            .ThenBy(pair => pair.row.Prompt)
+            .Select(pair => pair.row)
+            .ToList();
+    }
+
+    /// <summary>Le carnet d'erreurs, la prochaine échéance en tête.</summary>
+    private List<HistoryRow> ReviewRows() => _score.Review
+        .OrderBy(item => item.DueAt)
+        .Select(item => new HistoryRow(
+            item.Prompt,
+            $"niveau {item.Level} · {item.Topic} · {Due(item.DueAt)}",
+            item.Misses > 1 ? $"×{item.Misses}" : "",
+            (Brush)FindResource(item.DueAt <= DateTime.Now ? "WarnBrush" : "ChalkDimBrush"),
+            ""))
+        .ToList();
+
+    /// <summary>« maintenant », « dans 40 min », « demain à 9 h »…</summary>
+    private static string Due(DateTime when)
+    {
+        if (when <= DateTime.Now) return "à reposer maintenant";
+
+        TimeSpan left = when - DateTime.Now;
+        if (left < TimeSpan.FromHours(1)) return $"dans {(int)left.TotalMinutes + 1} min";
+        if (when.Date == DateTime.Today) return $"aujourd'hui à {when:HH} h";
+        if (when.Date == DateTime.Today.AddDays(1)) return $"demain à {when:HH} h";
+        return $"le {when:dd/MM}";
+    }
+
+    /// <summary>
+    /// Les chapitres que le joueur rate : c'est aussi la liste que le générateur privilégie,
+    /// autant la montrer plutôt que de la laisser agir en coulisses.
+    /// </summary>
+    private void ShowWeakTopics()
+    {
+        var weak = _score.WeakTopics(4);
+
+        WeakTopicsText.Text = weak.Count == 0
+            ? _score.Asked == 0
+                ? "Aucune question posée pour l'instant."
+                : "Aucun chapitre en difficulté. Yvan tire au hasard."
+            : "Chapitres à revoir, remis en avant : " + string.Join(" · ", weak);
     }
 
     private Border DayCell(DateTime day)
@@ -187,7 +318,8 @@ public partial class DashboardWindow : Window
             entry.Prompt,
             $"{Ago(entry.Date)} · niveau {entry.Level} · {verdict}",
             entry.Delta >= 0 ? $"+{entry.Delta}" : entry.Delta.ToString(),
-            (Brush)FindResource(good ? "GoodBrush" : "BadBrush"));
+            (Brush)FindResource(good ? "GoodBrush" : "BadBrush"),
+            "");
     }
 
     private static string Ago(DateTime when)
@@ -325,5 +457,9 @@ public partial class DashboardWindow : Window
 
     private void OnClose(object sender, RoutedEventArgs e) => Close();
 
-    private sealed record HistoryRow(string Prompt, string Detail, string Delta, Brush Color);
+    /// <summary>
+    /// Une ligne du panneau du bas, quelle que soit la vue. <paramref name="Key"/> ne sert
+    /// qu'aux chapitres : c'est lui qui rend la ligne cliquable.
+    /// </summary>
+    private sealed record HistoryRow(string Prompt, string Detail, string Delta, Brush Color, string Key);
 }

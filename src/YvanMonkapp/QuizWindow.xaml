@@ -23,6 +23,7 @@
         <Border CornerRadius="17" Background="{StaticResource BoardPhotoBrush}">
         <Border CornerRadius="17" Background="#A61A2B24">
 
+        <Grid>
         <Grid Margin="24,20,24,18">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -58,8 +59,22 @@
 
             <!-- l'énoncé -->
             <Border Grid.Row="1" Margin="0,20,0,0" CornerRadius="12" Background="#0F1C18" Padding="20,22">
-                <TextBlock x:Name="PromptText" Foreground="{StaticResource ChalkBrush}" FontSize="30"
-                           FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" LineHeight="38" />
+                <StackPanel>
+                    <TextBlock x:Name="PromptText" Foreground="{StaticResource ChalkBrush}" FontSize="30"
+                               FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" LineHeight="38" />
+
+                    <!-- la figure, quand la question se lit mieux dessinée -->
+                    <controls:FigureView x:Name="FigurePane" Height="178" Margin="0,12,0,0"
+                                         Visibility="Collapsed" />
+                    <TextBlock x:Name="FigureCaption" Margin="0,6,0,0" FontSize="12" TextAlignment="Center"
+                               Foreground="{StaticResource ChalkDimBrush}" TextWrapping="Wrap"
+                               Visibility="Collapsed" />
+
+                    <!-- le coup de pouce, révélé à la demande : il vit sous l'énoncé, pas à côté -->
+                    <TextBlock x:Name="HintLine" Margin="0,14,0,0" FontSize="13" TextAlignment="Center"
+                               Foreground="{StaticResource WoodBrush}" TextWrapping="Wrap"
+                               Visibility="Collapsed" />
+                </StackPanel>
             </Border>
 
             <!-- chrono -->
@@ -86,13 +101,17 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <TextBox x:Name="AnswerBox" Grid.Column="0" Style="{StaticResource AnswerBox}"
                          KeyDown="OnAnswerKeyDown" MaxLength="24" />
-                <Button x:Name="SubmitButton" Grid.Column="1" Margin="10,0,0,0" Content="Valider"
+                <Button x:Name="HintButton" Grid.Column="1" Margin="8,0,0,0" Content="?" Width="38" Padding="0"
+                        Style="{StaticResource GhostButton}" Click="OnHint"
+                        ToolTip="Un indice, contre la moitié des points (F1)" />
+                <Button x:Name="SubmitButton" Grid.Column="2" Margin="8,0,0,0" Content="Valider"
                         Style="{StaticResource PrimaryButton}" Click="OnSubmit" />
-                <Button x:Name="GiveUpButton" Grid.Column="2" Margin="8,0,0,0" Content="Je sèche"
+                <Button x:Name="GiveUpButton" Grid.Column="3" Margin="8,0,0,0" Content="Je sèche"
                         Style="{StaticResource GhostButton}" Click="OnGiveUp" />
             </Grid>
 
@@ -107,7 +126,12 @@
 
                     <StackPanel Grid.Column="0">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Name="DeltaText" FontSize="30" FontWeight="Bold" />
+                            <TextBlock x:Name="DeltaText" FontSize="30" FontWeight="Bold"
+                                       RenderTransformOrigin="0.5,0.6">
+                                <TextBlock.RenderTransform>
+                                    <ScaleTransform x:Name="DeltaPop" ScaleX="1" ScaleY="1" />
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
                             <TextBlock x:Name="VerdictText" Margin="12,0,0,0" VerticalAlignment="Center"
                                        FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ChalkBrush}" />
                         </StackPanel>
@@ -135,13 +159,23 @@
                     <TextBlock x:Name="PointsText" Foreground="{StaticResource ChalkBrush}" FontSize="13"
                                FontWeight="SemiBold" />
                     <TextBlock x:Name="StreakText" Margin="12,0,0,0" Foreground="{StaticResource WoodBrush}"
-                               FontSize="13" />
+                               FontSize="13" RenderTransformOrigin="0,0.5">
+                        <TextBlock.RenderTransform>
+                            <ScaleTransform x:Name="StreakPop" ScaleX="1" ScaleY="1" />
+                        </TextBlock.RenderTransform>
+                    </TextBlock>
                 </StackPanel>
 
                 <TextBlock x:Name="HintText" Grid.Column="1" TextAlignment="Right"
                            Foreground="#5E7A6E" FontSize="11" VerticalAlignment="Center"
                            Text="Entrée pour valider · Échap pour abandonner" />
             </Grid>
+        </Grid>
+
+        <!-- La fête : confettis, points qui s'envolent, bandeau de rang. Rien ici ne
+             participe à la mise en page ni ne prend le clic, tout est posé en Canvas
+             par-dessus le popup fini. -->
+        <Canvas x:Name="Effects" IsHitTestVisible="False" ClipToBounds="True" />
         </Grid>
         </Border>
         </Border>
